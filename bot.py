@@ -28,8 +28,9 @@ dp = Dispatcher()
 @dp.message(CommandStart())
 async def start_handler(message: types.Message):
     await message.answer(
-        "Arizangizni batafsil yozib qoldiring.\n\n"
-        "Xabaringiz admin ga yuboriladi va javob qaytariladi."
+        "BuxDU Yuridik klinika botiga xush kelibsiz!\n"
+        "Murojaatingizni to'liq matn ko'rinishida yozib qoldiring.\n"
+        "Murojaatlar 3 kun ichida ko'rib chiqiladi va javob yuboriladi."
     )
 
 # Foydalanuvchi xabari → ADMINGA
@@ -51,7 +52,7 @@ async def forward_to_admin(message: types.Message):
     )
 
     await bot.send_message(ADMIN_ID, text)
-    await message.answer("Arizangiz qabul qilindi. Tez orada javob beriladi.")
+    await message.answer("Sizning arizangiz qabul qilindi. Tez orada javob beriladi.")
 
 # Admin reply → foydalanuvchiga
 @dp.message(lambda m: m.from_user.id == ADMIN_ID and m.reply_to_message)
@@ -104,3 +105,4 @@ app.on_shutdown.append(on_shutdown)
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 10000))
     web.run_app(app, host="0.0.0.0", port=port)
+
