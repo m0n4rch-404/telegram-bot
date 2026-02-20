@@ -68,10 +68,7 @@ async def reply_to_user(message: types.Message):
         else:
             raise ValueError("ID topilmadi")
 
-        await bot.send_message(
-            user_id,
-            f"📬 Admin javobi:\n\n{message.text}"
-        )
+        await bot.send_message(user_id,f"📬 Admin javobi:\n\n{message.text}")
 
         await message.answer("Javob foydalanuvchiga yuborildi.")
 
@@ -105,4 +102,5 @@ app.on_shutdown.append(on_shutdown)
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 10000))
     web.run_app(app, host="0.0.0.0", port=port)
+
 
