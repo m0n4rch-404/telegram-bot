@@ -36,7 +36,6 @@ async def start_handler(message: types.Message):
 # Foydalanuvchi xabari → ADMINGA
 @dp.message()
 async def forward_to_admin(message: types.Message):
-    # Adminning o'zi yozsa o'tkazib yuboramiz
     if message.from_user.id == ADMIN_ID:
         return
 
@@ -54,26 +53,31 @@ async def forward_to_admin(message: types.Message):
     await bot.send_message(ADMIN_ID, text)
     await message.answer("Sizning arizangiz qabul qilindi. Tez orada javob beriladi.")
 
-# Admin reply → foydalanuvchiga
+# Admin reply → foydalanuvchiga (barqaror ishlaydigan)
 @dp.message(lambda m: m.from_user.id == ADMIN_ID and m.reply_to_message)
 async def reply_to_user(message: types.Message):
     original_text = message.reply_to_message.text or ""
+    user_id = None
 
-    try:
-        # "🆔 ID: 123456789" qatordan ID ni ajratamiz
-        for line in original_text.split("\n"):
-            if "🆔 ID:" in line:
+    # ID topishga harakat qilamiz
+    for line in original_text.split("\n"):
+        if line.startswith("🆔 ID:"):
+            try:
                 user_id = int(line.split(":")[1].strip())
                 break
-        else:
-            raise ValueError("ID topilmadi")
+            except Exception:
+                pass
 
-        await bot.send_message(user_id,f"📬 Admin javobi:\n\n{message.text}")
-
-        await message.answer("Javob foydalanuvchiga yuborildi.")
-
-    except Exception:
-        await message.answer("Foydalanuvchi ID aniqlanmadi. Faqat bot yuborgan xabarga reply qiling.")
+    if user_id:
+        try:
+            await bot.send_message(user_id, f"📬 Admin javobi:\n\n{message.text}")
+            await message.answer("Javob foydalanuvchiga yuborildi.")
+        except Exception as e:
+            await message.answer(f"Xatolik yuz berdi: {e}")
+    else:
+        await message.answer(
+            "Foydalanuvchi ID aniqlanmadi. Faqat bot yuborgan xabarga reply qiling."
+        )
 
 # ====== WEBHOOK ======
 
@@ -99,8 +103,8 @@ app.router.add_post(WEBHOOK_PATH, handle_webhook)
 app.on_startup.append(on_startup)
 app.on_shutdown.append(on_shutdown)
 
-if __name__ == "__main__":
+# ====== RUN ======
+if name == "__main__":
     port = int(os.getenv("PORT", 10000))
     web.run_app(app, host="0.0.0.0", port=port)
-
 
