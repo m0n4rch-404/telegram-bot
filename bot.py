@@ -44,7 +44,7 @@ async def forward_to_admin(message: types.Message):
         return
 
     text = (
-        "📩 Yangi ariza\n\n"
+        f"📩 Yangi ariza\n\n"
         f"👤 Ism: {message.from_user.full_name}\n"
         f"🆔 ID: {message.from_user.id}\n\n"
         f"{message.text}"
@@ -53,34 +53,22 @@ async def forward_to_admin(message: types.Message):
     await bot.send_message(ADMIN_ID, text)
     await message.answer("Sizning arizangiz qabul qilindi. Tez orada javob beriladi.")
 
-# Admin reply → foydalanuvchiga (barqaror ishlaydigan)
-@dp.message(lambda m: m.from_user.id == ADMIN_ID and m.reply_to_message)
+# Admin javobini foydalanuvchiga yuborish (format: user_id: javob matni)
+@dp.message(lambda m: m.from_user.id == ADMIN_ID)
 async def reply_to_user(message: types.Message):
-    original_text = message.reply_to_message.text or ""
-    user_id = None
+    if ":" not in message.text:
+        await message.answer("Iltimos, javobni shunday formatda yuboring: user_id: javob matni")
+        return
 
-    # ID topishga harakat qilamiz
-    for line in original_text.split("\n"):
-        if line.startswith("🆔 ID:"):
-            try:
-                user_id = int(line.split(":")[1].strip())
-                break
-            except Exception:
-                pass
-
-    if user_id:
-        try:
-            await bot.send_message(user_id, f"📬 Admin javobi:\n\n{message.text}")
-            await message.answer("Javob foydalanuvchiga yuborildi.")
-        except Exception as e:
-            await message.answer(f"Xatolik yuz berdi: {e}")
-    else:
-        await message.answer(
-            "Foydalanuvchi ID aniqlanmadi. Faqat bot yuborgan xabarga reply qiling."
-        )
+    try:
+        user_id_str, reply_text = message.text.split(":", 1)
+        user_id = int(user_id_str.strip())
+        await bot.send_message(user_id, f"📬 Admin javobi:\n\n{reply_text.strip()}")
+        await message.answer("Javob foydalanuvchiga yuborildi ✅")
+    except Exception as e:
+        await message.answer(f"Xatolik yuz berdi: {e}")
 
 # ====== WEBHOOK ======
-
 async def handle_webhook(request: web.Request):
     try:
         data = await request.json()
@@ -107,5 +95,4 @@ app.on_shutdown.append(on_shutdown)
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 10000))
     web.run_app(app, host="0.0.0.0", port=port)
-
 
